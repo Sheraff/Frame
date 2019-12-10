@@ -10,6 +10,7 @@ export default class IdleStack {
 		this.stack.push(task)
 		if(!this.idleCallbackId)
 			this.start()
+		return this
 	}
 
 	start() {
