@@ -6,29 +6,29 @@ export default class IdleStack {
 		this.stack = []
 	}
 
-	push(task, options) {
-		this.stack.push({task, options})
+	push(task) {
+		this.stack.push(task)
 		if(!this.idleCallbackId)
 			this.start()
 	}
 
 	start() {
-		this.idleCallbackId = requestIdleCallback(idleDeadline => {
+		this.idleCallbackId = requestIdleCallback(async idleDeadline => {
 			while (this.stack.length && idleDeadline.timeRemaining() > IdleStack.PADDING) {
-				const {task, options} = this.stack.shift()
-				this.lastResult = task(this.lastResult)
+				const task = this.stack.shift()
+				this.lastResult = await task(this.lastResult)
 			}
 			if(this.stack.length)
 				this.start()
 		})
 	}
 
-	finish() {
+	async finish() {
 		if(this.idleCallbackId)
 			cancelIdleCallback(this.idleCallbackId)
 		while (this.stack.length) {
-			const {task, options} = this.stack.shift()
-			this.lastResult = task(this.lastResult)
+			const task = this.stack.shift()
+			this.lastResult = await task(this.lastResult)
 		}
 		return this.lastResult
 	}
